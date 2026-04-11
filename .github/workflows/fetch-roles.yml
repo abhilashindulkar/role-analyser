@@ -1,0 +1,102 @@
+name: Update GCP Roles Data
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      source:
+        description: "Data source"
+        required: false
+        default: "docs"
+        type: choice
+        options:
+          - docs
+          - api
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: fetch-roles
+  cancel-in-progress: true
+
+env:
+  BRANCH_NAME: chore/update-roles-data
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Scrape roles from GCP docs
+        if: inputs.source != 'api'
+        run: python scripts/scrape_roles.py --output src/data/gcp-roles.json --typescript
+
+      - name: Authenticate to GCP
+        if: inputs.source == 'api'
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+
+      - name: Fetch roles from GCP API
+        if: inputs.source == 'api'
+        run: python scripts/fetch_roles.py --output src/data/gcp-roles.json --typescript
+        env:
+          GOOGLE_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+
+      - name: Copy to public
+        run: cp src/data/gcp-roles.json public/gcp-roles.json
+
+      - name: Check for changes
+        id: diff
+        run: |
+          git diff --quiet src/data/ public/gcp-roles.json && echo "changed=false" >> "$GITHUB_OUTPUT" || echo "changed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Create PR with updated data
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git push origin --delete "$BRANCH_NAME" 2>/dev/null || true
+
+          git checkout -b "$BRANCH_NAME"
+          git add src/data/gcp-roles.json src/data/roles.ts src/data/roles-metadata.json public/gcp-roles.json
+          git commit -m "chore: update GCP roles data $(date -u +%Y-%m-%d)"
+          git push -u origin "$BRANCH_NAME"
+
+          existing_pr=$(gh pr list --head "$BRANCH_NAME" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing_pr" ]; then
+            gh pr close "$existing_pr" --delete-branch 2>/dev/null || true
+          fi
+
+          pr_url=$(gh pr create \
+            --title "chore: update GCP roles data $(date -u +%Y-%m-%d)" \
+            --body "$(cat <<'EOF'
+          ## Automated roles data update
+
+          The weekly fetch picked up changes in GCP predefined roles/permissions.
+
+          **Source:** ${{ inputs.source || 'docs' }}
+          **What changed:** Updated role/permission data files with latest from GCP.
+
+          This PR was created automatically by the `fetch-roles` workflow.
+          EOF
+          )" \
+            --label "automated")
+
+          echo "Enabling auto-merge..."
+          gh pr merge "$pr_url" --auto --squash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

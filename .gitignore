@@ -1,0 +1,12 @@
+node_modules
+dist
+.env
+.env.*
+*.local
+
+# Generated data (these are committed by CI, not locally)
+# Remove from .gitignore once CI populates them, or
+# keep them here if you only want CI to track the files.
+# src/data/gcp-roles.json
+# src/data/roles-metadata.json
+# public/gcp-roles.json
