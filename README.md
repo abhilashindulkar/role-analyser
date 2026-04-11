@@ -1,4 +1,6 @@
-# GCP Role Analyser
+# Permiso
+
+**[Live App](https://abhilashindulkar.github.io/role-analyser/)** | **[GitHub](https://github.com/abhilashindulkar/role-analyser)**
 
 A visual tool to explore GCP IAM roles and permissions. Browse which permissions belong to which roles, compare roles side-by-side, and get AI-powered recommendations for the right role based on your use case.
 
@@ -6,9 +8,13 @@ A visual tool to explore GCP IAM roles and permissions. Browse which permissions
 
 - **Role Browser** — Search, filter, and browse all GCP IAM predefined roles with fuzzy search
 - **Permission Lookup** — Reverse lookup: find which roles include a specific permission
-- **Role Comparison** — Compare two roles side-by-side to see shared and unique permissions
-- **Role Advisor** — Describe what you need to do and get recommendations following least-privilege principles
-- **Service Filtering** — Filter roles by GCP service, stage (GA/Beta/Alpha), and category
+- **Role Comparison** — Full side-by-side permission diffs with color-coded columns
+- **Role Advisor** — Describe what you need and get least-privilege recommendations
+- **Service Pages** — Explore all roles within a service, ranked by permission count
+- **Export** — Download roles as JSON, YAML, or Terraform HCL snippets
+- **Dark Mode** — Toggle between light and dark themes
+- **PWA** — Install as a standalone app with offline caching
+- **Keyboard Shortcuts** — `Ctrl+K` to search, `Esc` to go back
 
 ## Getting Started
 
@@ -17,7 +23,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173).
+Open [http://localhost:5173/role-analyser/](http://localhost:5173/role-analyser/).
 
 The app ships with seed data covering common GCP services. The full dataset (1000+ roles) is populated automatically by CI.
 
@@ -63,6 +69,13 @@ scripts/
 docs/
   gcp-setup.md    One-time GCP project setup for WIF
 ```
+
+## Contributing
+
+Contributions are welcome! Please read the [Contributing Guide](./CONTRIBUTING.md) before opening a pull request.
+
+- [Code of Conduct](./CODE_OF_CONDUCT.md)
+- [Security Policy](./SECURITY.md)
 
 ## License
 

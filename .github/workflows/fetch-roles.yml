@@ -2,8 +2,7 @@ name: Update GCP Roles Data
 
 on:
   schedule:
-    # Daily at 06:00 UTC
-    - cron: "0 6 * * *"
+    - cron: "0 6 * * 1"
   workflow_dispatch:
     inputs:
       source:
@@ -38,12 +37,10 @@ jobs:
         with:
           python-version: "3.12"
 
-      # Default: scrape from public docs (no credentials needed)
       - name: Scrape roles from GCP docs
         if: inputs.source != 'api'
         run: python scripts/scrape_roles.py --output src/data/gcp-roles.json --typescript
 
-      # Alternative: fetch via GCP IAM API (requires WIF setup)
       - name: Authenticate to GCP
         if: inputs.source == 'api'
         id: auth
@@ -57,6 +54,9 @@ jobs:
         run: python scripts/fetch_roles.py --output src/data/gcp-roles.json --typescript
         env:
           GOOGLE_ACCESS_TOKEN: ${{ steps.auth.outputs.access_token }}
+
+      - name: Copy to public
+        run: cp src/data/gcp-roles.json public/gcp-roles.json
 
       - name: Check for changes
         id: diff
@@ -81,12 +81,12 @@ jobs:
             gh pr close "$existing_pr" --delete-branch 2>/dev/null || true
           fi
 
-          gh pr create \
+          pr_url=$(gh pr create \
             --title "chore: update GCP roles data $(date -u +%Y-%m-%d)" \
             --body "$(cat <<'EOF'
           ## Automated roles data update
 
-          The daily fetch picked up changes in GCP predefined roles/permissions.
+          The weekly fetch picked up changes in GCP predefined roles/permissions.
 
           **Source:** ${{ inputs.source || 'docs' }}
           **What changed:** Updated role/permission data files with latest from GCP.
@@ -94,6 +94,9 @@ jobs:
           This PR was created automatically by the `fetch-roles` workflow.
           EOF
           )" \
-            --label "automated"
+            --label "automated")
+
+          echo "Enabling auto-merge..."
+          gh pr merge "$pr_url" --auto --squash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

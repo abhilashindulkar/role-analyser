@@ -6,7 +6,7 @@ import type { GcpRole, SearchFilters, GcpService } from "../types";
 
 async function loadFullData(): Promise<GcpRole[] | null> {
   try {
-    const resp = await fetch("/gcp-roles.json");
+    const resp = await fetch(`${import.meta.env.BASE_URL}gcp-roles.json`);
     if (!resp.ok) return null;
     const data: GcpRole[] = await resp.json();
     if (Array.isArray(data) && data.length > 0) return data;

@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-brand-50: oklch(0.97 0.02 280);
   --color-brand-100: oklch(0.93 0.04 280);
@@ -15,6 +17,9 @@
 
   --color-surface: oklch(0.985 0.002 260);
   --color-surface-raised: oklch(1 0 0);
+  --color-dark-surface: oklch(0.15 0.01 260);
+  --color-dark-raised: oklch(0.20 0.015 260);
+  --color-dark-border: oklch(0.28 0.015 260);
 }
 
 @keyframes gradient-shift {
@@ -35,6 +40,10 @@
 @layer base {
   body {
     background-color: var(--color-surface);
+    transition: background-color 0.2s;
+  }
+  .dark body {
+    background-color: var(--color-dark-surface);
   }
 }
 

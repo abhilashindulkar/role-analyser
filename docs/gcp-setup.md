@@ -48,7 +48,7 @@ gcloud iam workload-identity-pools create github-pool \
 
 ### 5. Create a Workload Identity Provider
 
-Replace `YOUR_GITHUB_ORG` and `YOUR_REPO` with your GitHub org/user and repo name.
+Replace the repository value below if you've forked the project.
 
 ```bash
 gcloud iam workload-identity-pools providers create-oidc github-provider \
@@ -56,7 +56,7 @@ gcloud iam workload-identity-pools providers create-oidc github-provider \
   --workload-identity-pool="github-pool" \
   --display-name="GitHub Provider" \
   --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository" \
-  --attribute-condition="assertion.repository == 'YOUR_GITHUB_ORG/YOUR_REPO'" \
+  --attribute-condition="assertion.repository == 'abhilashindulkar/role-analyser'" \
   --issuer-uri="https://token.actions.githubusercontent.com"
 ```
 
@@ -68,7 +68,7 @@ The `attribute-condition` restricts this to your specific repository only.
 gcloud iam service-accounts add-iam-policy-binding \
   role-fetcher@role-analyser-data.iam.gserviceaccount.com \
   --role="roles/iam.workloadIdentityUser" \
-  --member="principalSet://iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/attribute.repository/YOUR_GITHUB_ORG/YOUR_REPO"
+  --member="principalSet://iam.googleapis.com/projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/attribute.repository/abhilashindulkar/role-analyser"
 ```
 
 Get your project number:
