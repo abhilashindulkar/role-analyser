@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
-import { Key, Search, ArrowLeft, Shield } from "lucide-react";
-import { findRolesWithPermission } from "../utils/search";
+import { Key, Search, ArrowLeft, Shield, X as XIcon, Plus } from "lucide-react";
 import type { GcpRole } from "../types";
 
 interface PermissionLookupProps {
@@ -12,8 +11,10 @@ interface PermissionLookupProps {
 }
 
 export function PermissionLookup({ allRoles, allPermissions, initialPermission, onRoleClick, onBack }: PermissionLookupProps) {
-  const [search, setSearch] = useState(initialPermission ?? "");
-  const [selectedPerm, setSelectedPerm] = useState<string | null>(initialPermission ?? null);
+  const [search, setSearch] = useState("");
+  const [selectedPerms, setSelectedPerms] = useState<string[]>(
+    initialPermission ? [initialPermission] : []
+  );
 
   const filteredPermissions = useMemo(() => {
     if (!search.trim()) return allPermissions.slice(0, 50);
@@ -21,9 +22,17 @@ export function PermissionLookup({ allRoles, allPermissions, initialPermission, 
   }, [allPermissions, search]);
 
   const matchingRoles = useMemo(() => {
-    if (!selectedPerm) return [];
-    return findRolesWithPermission(allRoles, selectedPerm);
-  }, [allRoles, selectedPerm]);
+    if (selectedPerms.length === 0) return [];
+    return allRoles
+      .filter((r) => selectedPerms.every((p) => r.permissions.includes(p)))
+      .sort((a, b) => a.permissions.length - b.permissions.length);
+  }, [allRoles, selectedPerms]);
+
+  function togglePerm(perm: string) {
+    setSelectedPerms((prev) =>
+      prev.includes(perm) ? prev.filter((p) => p !== perm) : [...prev, perm]
+    );
+  }
 
   return (
     <div className="max-w-5xl mx-auto animate-fade-up">
@@ -39,23 +48,50 @@ export function PermissionLookup({ allRoles, allPermissions, initialPermission, 
             </div>
             <div>
               <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">Permission Lookup</h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Find which roles include a specific permission</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Find roles that include one or more permissions</p>
             </div>
           </div>
+
+          {selectedPerms.length > 0 && (
+            <div className="mb-4 flex flex-wrap gap-1.5">
+              {selectedPerms.map((perm) => (
+                <span key={perm} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 bg-brand-50 dark:bg-brand-950/30 text-brand-700 dark:text-brand-400 text-xs font-mono rounded-lg border border-brand-100 dark:border-brand-800">
+                  {perm}
+                  <button onClick={() => togglePerm(perm)} className="hover:text-red-500 transition-colors">
+                    <XIcon className="h-3 w-3" />
+                  </button>
+                </span>
+              ))}
+              <button onClick={() => setSelectedPerms([])} className="text-[11px] text-slate-400 hover:text-red-500 transition-colors px-2 py-1">
+                Clear all
+              </button>
+            </div>
+          )}
+
           <div className="relative">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-300 dark:text-slate-600" />
-            <input type="text" value={search} onChange={(e) => { setSearch(e.target.value); setSelectedPerm(null); }} placeholder="Type a permission name... e.g. storage.objects.get" className="w-full pl-11 pr-4 py-3 border border-slate-200 dark:border-dark-border dark:bg-dark-surface dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all" />
+            <input type="text" value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Type a permission name... e.g. storage.objects.get" className="w-full pl-11 pr-4 py-3 border border-slate-200 dark:border-dark-border dark:bg-dark-surface dark:text-white rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all" />
           </div>
         </div>
 
         <div className="flex divide-x divide-slate-100 dark:divide-dark-border min-h-[450px]">
           <div className="w-1/2 overflow-y-auto max-h-[500px]">
             <div className="p-2">
-              {filteredPermissions.map((perm) => (
-                <button key={perm} onClick={() => { setSelectedPerm(perm); setSearch(perm); }} className={`w-full text-left px-3.5 py-2.5 text-xs font-mono rounded-xl transition-all ${
-                  selectedPerm === perm ? "bg-brand-50 dark:bg-brand-950/30 text-brand-700 dark:text-brand-400 font-medium border border-brand-100 dark:border-brand-800" : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-dark-surface border border-transparent"
-                }`}>{perm}</button>
-              ))}
+              {filteredPermissions.map((perm) => {
+                const isSelected = selectedPerms.includes(perm);
+                return (
+                  <button key={perm} onClick={() => togglePerm(perm)} className={`w-full text-left px-3.5 py-2.5 text-xs font-mono rounded-xl transition-all flex items-center gap-2 ${
+                    isSelected ? "bg-brand-50 dark:bg-brand-950/30 text-brand-700 dark:text-brand-400 font-medium border border-brand-100 dark:border-brand-800" : "text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-dark-surface border border-transparent"
+                  }`}>
+                    <span className="flex-1 truncate">{perm}</span>
+                    {isSelected ? (
+                      <XIcon className="h-3 w-3 shrink-0 text-brand-400" />
+                    ) : (
+                      <Plus className="h-3 w-3 shrink-0 text-slate-300 dark:text-slate-600" />
+                    )}
+                  </button>
+                );
+              })}
               {filteredPermissions.length === 0 && (
                 <div className="p-8 text-center">
                   <Key className="h-8 w-8 text-slate-200 dark:text-slate-700 mx-auto mb-3" />
@@ -66,12 +102,15 @@ export function PermissionLookup({ allRoles, allPermissions, initialPermission, 
           </div>
 
           <div className="w-1/2 overflow-y-auto max-h-[500px] bg-slate-50/30 dark:bg-dark-surface/30">
-            {selectedPerm ? (
+            {selectedPerms.length > 0 ? (
               <div className="p-5">
-                <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3">
-                  {matchingRoles.length} role{matchingRoles.length !== 1 && "s"} with this permission
+                <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-1">
+                  {matchingRoles.length} role{matchingRoles.length !== 1 && "s"} with {selectedPerms.length === 1 ? "this permission" : `all ${selectedPerms.length} permissions`}
                 </h3>
-                <div className="space-y-2">
+                {selectedPerms.length > 1 && (
+                  <p className="text-[11px] text-slate-400 dark:text-slate-500 mb-3">Sorted by fewest total permissions (narrowest first)</p>
+                )}
+                <div className="space-y-2 mt-3">
                   {matchingRoles.map((role) => (
                     <button key={role.name} onClick={() => onRoleClick(role)} className="w-full text-left p-3.5 bg-surface-raised dark:bg-dark-raised hover:bg-brand-50 dark:hover:bg-brand-950/30 rounded-xl border border-slate-200/80 dark:border-dark-border hover:border-brand-200 dark:hover:border-brand-700 transition-all group">
                       <div className="flex items-center gap-2">
@@ -82,13 +121,19 @@ export function PermissionLookup({ allRoles, allPermissions, initialPermission, 
                       <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1">{role.service} &middot; {role.permissions.length} permissions</p>
                     </button>
                   ))}
+                  {matchingRoles.length === 0 && (
+                    <div className="py-8 text-center">
+                      <Shield className="h-8 w-8 text-slate-200 dark:text-slate-700 mx-auto mb-3" />
+                      <p className="text-sm text-slate-400 dark:text-slate-500">No single role contains all selected permissions</p>
+                    </div>
+                  )}
                 </div>
               </div>
             ) : (
               <div className="h-full flex items-center justify-center p-8">
                 <div className="text-center">
                   <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-slate-100 dark:bg-dark-raised mb-3"><Key className="h-5 w-5 text-slate-300 dark:text-slate-600" /></div>
-                  <p className="text-sm text-slate-400 dark:text-slate-500">Select a permission to see matching roles</p>
+                  <p className="text-sm text-slate-400 dark:text-slate-500">Select permissions to see matching roles</p>
                 </div>
               </div>
             )}
