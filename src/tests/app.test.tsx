@@ -1,24 +1,24 @@
 import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
+import { MemoryRouter } from "react-router-dom";
 import App from "../App";
+
+function renderApp(route = "/") {
+  return render(
+    <MemoryRouter initialEntries={[route]}>
+      <App />
+    </MemoryRouter>
+  );
+}
 
 describe("App", () => {
   it("renders the Permiso header", () => {
-    render(
-      <BrowserRouter basename="/role-analyser">
-        <App />
-      </BrowserRouter>
-    );
+    renderApp();
     expect(screen.getByText("Permiso")).toBeInTheDocument();
   });
 
   it("renders navigation items", () => {
-    render(
-      <BrowserRouter basename="/role-analyser">
-        <App />
-      </BrowserRouter>
-    );
+    renderApp();
     expect(screen.getAllByText("Explore").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Compare").length).toBeGreaterThanOrEqual(1);
     expect(screen.getAllByText("Permissions").length).toBeGreaterThanOrEqual(1);
