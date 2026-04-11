@@ -7,6 +7,7 @@ import {
   Github,
   Search,
   ArrowRight,
+  ArrowLeftRight,
   Layers,
   Lock,
   Zap,
@@ -16,12 +17,13 @@ import { FilterPanel } from "./components/FilterPanel";
 import { RoleCard } from "./components/RoleCard";
 import { RoleDetail } from "./components/RoleDetail";
 import { RoleComparison } from "./components/RoleComparison";
+import { ComparisonView } from "./components/ComparisonView";
 import { AiChat } from "./components/AiChat";
 import { PermissionLookup } from "./components/PermissionLookup";
 import { useRoleData } from "./hooks/useRoleData";
 import type { GcpRole } from "./types";
 
-type View = "browse" | "detail" | "permissions" | "advisor";
+type View = "browse" | "detail" | "permissions" | "advisor" | "compare";
 
 export default function App() {
   const {
@@ -68,6 +70,7 @@ export default function App() {
 
   const navItems = [
     { id: "browse" as const, label: "Explore", icon: LayoutGrid },
+    { id: "compare" as const, label: "Compare", icon: ArrowLeftRight },
     { id: "permissions" as const, label: "Permissions", icon: Key },
     { id: "advisor" as const, label: "Advisor", icon: Sparkles },
   ];
@@ -107,7 +110,7 @@ export default function App() {
                       setSelectedRole(null);
                       setShowHero(false);
                     }}
-                    className={`flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                    className={`relative flex items-center gap-2 px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
                       isActive
                         ? "bg-white/10 text-white"
                         : "text-white/50 hover:text-white/80 hover:bg-white/5"
@@ -115,6 +118,11 @@ export default function App() {
                   >
                     <item.icon className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">{item.label}</span>
+                    {item.id === "compare" && compareRoles.length > 0 && (
+                      <span className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center bg-brand-400 text-white text-[9px] font-bold rounded-full">
+                        {compareRoles.length}
+                      </span>
+                    )}
                   </button>
                 );
               })}
@@ -171,6 +179,16 @@ export default function App() {
                 </button>
                 <button
                   onClick={() => {
+                    setView("compare");
+                    setShowHero(false);
+                  }}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/15 transition-colors border border-white/10"
+                >
+                  <ArrowLeftRight className="h-4 w-4" />
+                  Compare roles
+                </button>
+                <button
+                  onClick={() => {
                     setView("advisor");
                     setShowHero(false);
                   }}
@@ -190,21 +208,34 @@ export default function App() {
                   icon: Layers,
                   title: "Role comparison",
                   desc: "Side-by-side permission diffs",
+                  action: () => {
+                    setView("compare");
+                    setShowHero(false);
+                  },
                 },
                 {
                   icon: Lock,
                   title: "Least privilege",
                   desc: "AI picks the narrowest role",
+                  action: () => {
+                    setView("advisor");
+                    setShowHero(false);
+                  },
                 },
                 {
                   icon: Zap,
                   title: "Reverse lookup",
                   desc: "Permission to roles, instantly",
+                  action: () => {
+                    setView("permissions");
+                    setShowHero(false);
+                  },
                 },
               ].map((f) => (
-                <div
+                <button
                   key={f.title}
-                  className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-white/5"
+                  onClick={f.action}
+                  className="flex items-start gap-3 p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all text-left"
                 >
                   <f.icon className="h-5 w-5 text-brand-300 shrink-0 mt-0.5" />
                   <div>
@@ -215,7 +246,7 @@ export default function App() {
                       {f.desc}
                     </p>
                   </div>
-                </div>
+                </button>
               ))}
             </div>
           </div>
@@ -236,6 +267,13 @@ export default function App() {
             allRoles={roles}
             onBack={() => setView("browse")}
             onPermissionClick={handlePermissionClick}
+          />
+        ) : !loading && view === "compare" ? (
+          <ComparisonView
+            allRoles={roles}
+            initialRoles={compareRoles}
+            onRoleClick={handleRoleClick}
+            onBack={() => setView("browse")}
           />
         ) : !loading && view === "permissions" ? (
           <PermissionLookup
@@ -275,6 +313,10 @@ export default function App() {
                     )
                   }
                   onClear={() => setCompareRoles([])}
+                  onViewFull={() => {
+                    setView("compare");
+                    setShowHero(false);
+                  }}
                 />
               )}
 

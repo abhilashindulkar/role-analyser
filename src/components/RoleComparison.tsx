@@ -1,4 +1,4 @@
-import { X, ArrowLeftRight } from "lucide-react";
+import { X, ArrowLeftRight, Maximize2 } from "lucide-react";
 import { useMemo } from "react";
 import { compareRoles } from "../utils/search";
 import type { GcpRole } from "../types";
@@ -7,12 +7,14 @@ interface RoleComparisonProps {
   roles: GcpRole[];
   onRemove: (role: GcpRole) => void;
   onClear: () => void;
+  onViewFull: () => void;
 }
 
 export function RoleComparison({
   roles,
   onRemove,
   onClear,
+  onViewFull,
 }: RoleComparisonProps) {
   const comparison = useMemo(() => {
     if (roles.length !== 2) return null;
@@ -39,7 +41,7 @@ export function RoleComparison({
       </div>
 
       <div className="p-4">
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2 mb-3">
           {roles.map((role) => (
             <div
               key={role.name}
@@ -69,60 +71,45 @@ export function RoleComparison({
         </div>
 
         {comparison && (
-          <div className="space-y-3">
+          <div className="space-y-2 mb-3">
             {[
               {
                 label: "Shared",
-                items: comparison.shared,
+                count: comparison.shared.length,
                 dot: "bg-emerald-400",
-                tag: "bg-emerald-50 text-emerald-600",
               },
               {
                 label: `Only ${roles[0].title}`,
-                items: comparison.onlyA,
+                count: comparison.onlyA.length,
                 dot: "bg-brand-400",
-                tag: "bg-brand-50 text-brand-600",
               },
               {
                 label: `Only ${roles[1].title}`,
-                items: comparison.onlyB,
+                count: comparison.onlyB.length,
                 dot: "bg-violet-400",
-                tag: "bg-violet-50 text-violet-600",
               },
-            ].map((section) => (
-              <div key={section.label}>
-                <div className="flex items-center gap-2 mb-1.5">
-                  <div
-                    className={`h-2 w-2 rounded-full ${section.dot}`}
-                  />
-                  <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                    {section.label} ({section.items.length})
-                  </h4>
-                </div>
-                <div className="flex flex-wrap gap-1 max-h-20 overflow-y-auto">
-                  {section.items.length > 0 ? (
-                    section.items.slice(0, 20).map((p) => (
-                      <span
-                        key={p}
-                        className={`text-[10px] font-mono px-2 py-0.5 rounded-md ${section.tag}`}
-                      >
-                        {p}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-[10px] text-slate-300 italic">
-                      None
-                    </span>
-                  )}
-                  {section.items.length > 20 && (
-                    <span className="text-[10px] text-slate-400 px-2 py-0.5">
-                      +{section.items.length - 20} more
-                    </span>
-                  )}
-                </div>
+            ].map((s) => (
+              <div key={s.label} className="flex items-center gap-2">
+                <div className={`h-2 w-2 rounded-full ${s.dot}`} />
+                <span className="text-[11px] text-slate-500 truncate flex-1">
+                  {s.label}
+                </span>
+                <span className="text-[11px] font-bold text-slate-600">
+                  {s.count}
+                </span>
               </div>
             ))}
           </div>
+        )}
+
+        {roles.length === 2 && (
+          <button
+            onClick={onViewFull}
+            className="w-full flex items-center justify-center gap-2 py-2 text-xs font-semibold text-brand-600 bg-brand-50 hover:bg-brand-100 rounded-xl transition-colors border border-brand-100"
+          >
+            <Maximize2 className="h-3.5 w-3.5" />
+            View full diff
+          </button>
         )}
       </div>
     </div>
