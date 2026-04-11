@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: oklch(0.97 0.02 280);
+  --color-brand-100: oklch(0.93 0.04 280);
+  --color-brand-200: oklch(0.87 0.08 280);
+  --color-brand-300: oklch(0.78 0.12 275);
+  --color-brand-400: oklch(0.68 0.17 270);
+  --color-brand-500: oklch(0.58 0.22 268);
+  --color-brand-600: oklch(0.50 0.22 268);
+  --color-brand-700: oklch(0.43 0.19 268);
+  --color-brand-800: oklch(0.36 0.15 268);
+  --color-brand-900: oklch(0.28 0.10 268);
+  --color-brand-950: oklch(0.18 0.06 268);
+
+  --color-surface: oklch(0.985 0.002 260);
+  --color-surface-raised: oklch(1 0 0);
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse-gentle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@layer base {
+  body {
+    background-color: var(--color-surface);
+  }
+}
+
+@utility animate-gradient {
+  animation: gradient-shift 8s ease infinite;
+  background-size: 200% 200%;
+}
+
+@utility animate-fade-up {
+  animation: fade-up 0.4s ease-out both;
+}
+
+@utility animate-pulse-gentle {
+  animation: pulse-gentle 2s ease-in-out infinite;
+}
