@@ -24,6 +24,8 @@ import {
   Sun,
   Clock,
   Trash2,
+  Boxes,
+  Cloud,
 } from "lucide-react";
 import { SearchBar } from "./components/SearchBar";
 import { FilterPanel } from "./components/FilterPanel";
@@ -35,12 +37,15 @@ import { AiChat } from "./components/AiChat";
 import { PermissionLookup } from "./components/PermissionLookup";
 import { ServiceDetail } from "./components/ServiceDetail";
 import { PermissionChart } from "./components/PermissionChart";
+import { ApiBrowser } from "./components/ApiBrowser";
+import { ApiDetail } from "./components/ApiDetail";
+import { APIS_DATA } from "./data/apis";
 import { useRoleData } from "./hooks/useRoleData";
 import { useDarkMode } from "./hooks/useDarkMode";
 import { useRoleHistory } from "./hooks/useRoleHistory";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import type { GcpRole } from "./types";
+import type { GcpApi, GcpRole } from "./types";
 
 function VirtualRoleGrid({
   roles,
@@ -315,8 +320,16 @@ export default function App() {
     { to: "/", label: "Explore", icon: LayoutGrid },
     { to: "/compare", label: "Compare", icon: ArrowLeftRight },
     { to: "/permissions", label: "Permissions", icon: Key },
+    { to: "/apis", label: "APIs", icon: Boxes },
     { to: "/advisor", label: "Advisor", icon: Sparkles },
   ];
+
+  const handleApiClick = useCallback(
+    (api: GcpApi) => {
+      navigate(`/api/${encodeURIComponent(api.name)}`);
+    },
+    [navigate]
+  );
 
   const isHome = loc.pathname === "/" || loc.pathname === "";
 
@@ -335,7 +348,11 @@ export default function App() {
 
             <nav className="flex items-center gap-0.5">
               {navItems.map((item) => {
-                const isActive = loc.pathname === item.to || (loc.pathname.startsWith("/role/") && item.to === "/") || (loc.pathname.startsWith("/service/") && item.to === "/");
+                const isActive =
+                  loc.pathname === item.to ||
+                  (loc.pathname.startsWith("/role/") && item.to === "/") ||
+                  (loc.pathname.startsWith("/service/") && item.to === "/") ||
+                  (loc.pathname.startsWith("/api/") && item.to === "/apis");
                 return (
                   <Link
                     key={item.to}
@@ -375,15 +392,15 @@ export default function App() {
             <div className="max-w-2xl animate-fade-up">
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-xs font-semibold text-brand-300 bg-brand-800/50 px-3 py-1 rounded-full border border-brand-700/50">
-                  {roles.length} roles indexed
+                  {roles.length} roles &middot; {APIS_DATA.length} APIs indexed
                 </span>
               </div>
               <h1 className="text-4xl sm:text-5xl font-extrabold text-white tracking-tight leading-[1.1]">
-                GCP IAM roles,<br />
+                GCP IAM and APIs,<br />
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-300 to-brand-400">finally readable.</span>
               </h1>
               <p className="mt-5 text-lg text-brand-200/80 leading-relaxed max-w-lg">
-                Search {allPermissions.length.toLocaleString()} permissions across {services.length} services. Compare roles, reverse-lookup permissions, and get AI recommendations.
+                Search {allPermissions.length.toLocaleString()} permissions across {services.length} services and browse {APIS_DATA.length} Google Cloud APIs. Compare roles, reverse-lookup permissions, and get AI recommendations.
               </p>
               <div className="mt-8 flex flex-wrap gap-3">
                 <button onClick={() => { searchRef.current?.focus(); document.getElementById("search-section")?.scrollIntoView({ behavior: "smooth" }); }} className="flex items-center gap-2 px-5 py-2.5 bg-white text-brand-900 font-semibold rounded-xl hover:bg-brand-50 transition-colors shadow-lg shadow-black/20">
@@ -391,6 +408,9 @@ export default function App() {
                 </button>
                 <Link to="/compare" className="flex items-center gap-2 px-5 py-2.5 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/15 transition-colors border border-white/10">
                   <ArrowLeftRight className="h-4 w-4" />Compare roles
+                </Link>
+                <Link to="/apis" className="flex items-center gap-2 px-5 py-2.5 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/15 transition-colors border border-white/10">
+                  <Boxes className="h-4 w-4" />Browse APIs
                 </Link>
                 <Link to="/advisor" className="flex items-center gap-2 px-5 py-2.5 bg-white/10 text-white font-semibold rounded-xl hover:bg-white/15 transition-colors border border-white/10">
                   <Sparkles className="h-4 w-4" />Ask the advisor<ArrowRight className="h-3.5 w-3.5" />
@@ -509,6 +529,25 @@ export default function App() {
                 />
               }
             />
+            <Route
+              path="/apis"
+              element={
+                <ApiBrowser roles={roles} onApiClick={handleApiClick} />
+              }
+            />
+            <Route
+              path="/api/:apiName"
+              element={
+                <ApiDetailRoute
+                  roles={roles}
+                  onBack={() => navigate("/apis")}
+                  onRoleClick={handleRoleClick}
+                  onPermissionClick={(p) =>
+                    navigate(`/permissions?q=${encodeURIComponent(p)}`)
+                  }
+                />
+              }
+            />
           </Routes>
         )}
       </main>
@@ -516,7 +555,7 @@ export default function App() {
       {/* Footer */}
       <footer className="border-t border-slate-200/60 dark:border-dark-border mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
-          <p className="text-xs text-slate-400 dark:text-slate-500">Permiso - Open source GCP IAM explorer. Data sourced from Google Cloud documentation.</p>
+          <p className="text-xs text-slate-400 dark:text-slate-500">Permiso - Open source GCP IAM and API explorer. Data sourced from Google Cloud documentation and the APIs Discovery directory.</p>
           <div className="flex items-center gap-4">
             <kbd className="hidden sm:inline text-[10px] text-slate-400 dark:text-slate-500">
               <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-dark-raised rounded border border-slate-200 dark:border-dark-border font-mono">Ctrl+K</kbd> to search
@@ -602,6 +641,50 @@ function ServiceDetailRoute({
       allRoles={roles}
       onRoleClick={onRoleClick}
       onBack={() => navigate("/")}
+    />
+  );
+}
+
+function ApiDetailRoute({
+  roles,
+  onBack,
+  onRoleClick,
+  onPermissionClick,
+}: {
+  roles: GcpRole[];
+  onBack: () => void;
+  onRoleClick: (role: GcpRole) => void;
+  onPermissionClick: (perm: string) => void;
+}) {
+  const { apiName: rawApiName } = useParams();
+  const apiName = decodeURIComponent(rawApiName ?? "");
+  const api = APIS_DATA.find((a) => a.name === apiName);
+  if (!api) {
+    return (
+      <div className="text-center py-20">
+        <Cloud className="h-12 w-12 text-slate-200 dark:text-slate-700 mx-auto mb-4" />
+        <h2 className="text-lg font-semibold text-slate-600 dark:text-slate-300">
+          API not found
+        </h2>
+        <p className="text-sm text-slate-400 dark:text-slate-500 mt-1 font-mono">
+          {apiName}
+        </p>
+        <Link
+          to="/apis"
+          className="mt-4 inline-block text-sm text-brand-600 dark:text-brand-400 font-medium"
+        >
+          Back to APIs
+        </Link>
+      </div>
+    );
+  }
+  return (
+    <ApiDetail
+      api={api}
+      allRoles={roles}
+      onBack={onBack}
+      onRoleClick={onRoleClick}
+      onPermissionClick={onPermissionClick}
     />
   );
 }

@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- GCP APIs browser tab: searchable, category-filtered list of all 173 Google Cloud service APIs sourced from Google's APIs Discovery directory
+- API detail pages with documentation/console links and the IAM roles that use each API (matched by permission prefix)
+- `scripts/fetch_apis.py` to refresh the API dataset from `https://discovery.googleapis.com/discovery/v1/apis` (`npm run fetch-apis`)
 - Role browser with fuzzy search, service/stage/category filters
 - Side-by-side role comparison with color-coded permission diffs
 - Reverse permission lookup (find roles by permission)

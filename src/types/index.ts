@@ -46,3 +46,34 @@ export interface ChatMessage {
   recommendations?: AiRecommendation[];
   timestamp: Date;
 }
+
+export type ApiCategory =
+  | "Compute"
+  | "Storage & Databases"
+  | "Data Analytics"
+  | "AI & ML"
+  | "Networking"
+  | "Security & Identity"
+  | "DevOps & CI/CD"
+  | "Operations"
+  | "Integration"
+  | "Management"
+  | "Other";
+
+export interface GcpApi {
+  name: string;
+  title: string;
+  summary: string;
+  category: ApiCategory;
+  permissionPrefix: string;
+  stage: "GA" | "BETA" | "ALPHA" | "DEPRECATED";
+  docsUrl: string;
+  consoleUrl?: string;
+  enabledByDefault?: boolean;
+}
+
+export interface ApiFilters {
+  query: string;
+  categories: ApiCategory[];
+  stages: string[];
+}

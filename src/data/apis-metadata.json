@@ -1,0 +1,17 @@
+{
+  "fetched_at": "2026-05-20T06:42:40Z",
+  "source": "https://discovery.googleapis.com/discovery/v1/apis?preferred=true",
+  "total_apis": 173,
+  "categories": {
+    "AI & ML": 22,
+    "Compute": 12,
+    "Data Analytics": 24,
+    "DevOps & CI/CD": 12,
+    "Integration": 16,
+    "Management": 27,
+    "Networking": 9,
+    "Operations": 6,
+    "Security & Identity": 26,
+    "Storage & Databases": 19
+  }
+}
