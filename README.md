@@ -11,6 +11,7 @@ A visual tool to explore GCP IAM roles and permissions. Browse which permissions
 - **Role Comparison** — Full side-by-side permission diffs with color-coded columns
 - **Role Advisor** — Describe what you need and get least-privilege recommendations
 - **Service Pages** — Explore all roles within a service, ranked by permission count
+- **API Catalog** — Browse all 173 public GCP service APIs with category filters, docs links, and the IAM roles that use each one
 - **Export** — Download roles as JSON, YAML, or Terraform HCL snippets
 - **Dark Mode** — Toggle between light and dark themes
 - **PWA** — Install as a standalone app with offline caching
@@ -38,12 +39,15 @@ A GitHub Actions workflow runs weekly and scrapes all predefined GCP roles and p
 ### Running locally
 
 ```bash
-# Scrape from public docs (no account needed)
+# Scrape roles from public docs (no account needed)
 python scripts/scrape_roles.py --typescript
 
-# Or fetch via GCP API (requires auth)
+# Or fetch roles via GCP API (requires auth)
 gcloud auth application-default login
 python scripts/fetch_roles.py --typescript
+
+# Refresh the GCP APIs catalog from Google's APIs Discovery directory
+npm run fetch-apis
 ```
 
 ## Tech Stack

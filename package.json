@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "fetch-roles": "python scripts/fetch_roles.py"
+    "fetch-roles": "python scripts/fetch_roles.py",
+    "fetch-apis": "python scripts/fetch_apis.py"
   },
   "dependencies": {
     "@tanstack/react-virtual": "^3.13.23",
