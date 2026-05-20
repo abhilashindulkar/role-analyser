@@ -1,9 +1,9 @@
 {
-  "fetched_at": "2026-04-11T09:23:34Z",
+  "fetched_at": "2026-05-18T09:48:55Z",
   "source": "Google Cloud documentation (public)",
-  "total_roles": 421,
-  "total_permissions": 1965,
-  "total_services": 32,
+  "total_roles": 464,
+  "total_permissions": 2238,
+  "total_services": 33,
   "services": {
     "App Engine": 9,
     "Basic": 3,
@@ -13,9 +13,9 @@
     "Cloud Composer": 10,
     "Cloud DNS": 5,
     "Cloud Deploy": 12,
-    "Cloud Key Management Service": 29,
+    "Cloud Key Management Service": 30,
     "Cloud Logging": 11,
-    "Cloud Monitoring": 22,
+    "Cloud Monitoring": 24,
     "Cloud Run": 12,
     "Cloud Run functions": 5,
     "Cloud Storage": 24,
@@ -36,6 +36,7 @@
     "Service Directory": 6,
     "Service Usage": 5,
     "Spanner": 13,
+    "Vertex AI": 40,
     "Workflows": 5
   }
 }
