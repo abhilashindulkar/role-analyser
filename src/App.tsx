@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Routes,
   Route,
@@ -26,6 +26,7 @@ import {
   Trash2,
   Boxes,
   Cloud,
+  Eye,
 } from "lucide-react";
 import { SearchBar } from "./components/SearchBar";
 import { FilterPanel } from "./components/FilterPanel";
@@ -44,8 +45,28 @@ import { useRoleData } from "./hooks/useRoleData";
 import { useDarkMode } from "./hooks/useDarkMode";
 import { useRoleHistory } from "./hooks/useRoleHistory";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+import { useVisitorCount } from "./hooks/useVisitorCount";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import type { GcpApi, GcpRole } from "./types";
+
+function CountUpNumber({ value }: { value: number }) {
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    if (value === 0) return;
+    const duration = 1200;
+    const start = performance.now();
+    const frame = (now: number) => {
+      const progress = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setDisplay(Math.floor(eased * value));
+      if (progress < 1) requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  }, [value]);
+
+  return <>{display.toLocaleString()}</>;
+}
 
 function VirtualRoleGrid({
   roles,
@@ -255,6 +276,7 @@ export default function App() {
   const data = useRoleData();
   const { dark, toggle: toggleDark } = useDarkMode();
   const { history, recordVisit, clearHistory } = useRoleHistory();
+  const visitorCount = useVisitorCount();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const searchRef = useRef<HTMLInputElement>(null);
@@ -557,6 +579,13 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-between">
           <p className="text-xs text-slate-400 dark:text-slate-500">Permiso - Open source GCP IAM and API explorer. Data sourced from Google Cloud documentation and the APIs Discovery directory.</p>
           <div className="flex items-center gap-4">
+            {visitorCount > 0 && (
+              <div className="flex items-center gap-1.5 text-xs text-slate-400 dark:text-slate-500" title="Total visits from this browser">
+                <Eye className="h-3 w-3" />
+                <CountUpNumber value={visitorCount} />
+                <span>visits</span>
+              </div>
+            )}
             <kbd className="hidden sm:inline text-[10px] text-slate-400 dark:text-slate-500">
               <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-dark-raised rounded border border-slate-200 dark:border-dark-border font-mono">Ctrl+K</kbd> to search
             </kbd>
