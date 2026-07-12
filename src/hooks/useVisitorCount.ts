@@ -1,23 +1,26 @@
 import { useState, useEffect } from "react";
 
-const STORAGE_KEY = "permiso-visitor-count";
-const SESSION_KEY = "permiso-session-counted";
+const SESSION_KEY = "permiso-tally-counted";
+const TALLY_URL = "https://tally.yuki.sh/hits/permiso-role-analyser/visits.json";
 
 export function useVisitorCount() {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    const stored = parseInt(localStorage.getItem(STORAGE_KEY) ?? "0", 10);
     const alreadyCounted = sessionStorage.getItem(SESSION_KEY);
+    const url = alreadyCounted ? `${TALLY_URL}?mode=read` : TALLY_URL;
 
-    if (!alreadyCounted) {
-      const next = stored + 1;
-      localStorage.setItem(STORAGE_KEY, String(next));
-      sessionStorage.setItem(SESSION_KEY, "1");
-      setCount(next);
-    } else {
-      setCount(stored);
-    }
+    fetch(url)
+      .then((r) => r.json())
+      .then((data: { visit: number }) => {
+        if (!alreadyCounted) {
+          sessionStorage.setItem(SESSION_KEY, "1");
+        }
+        setCount(data.visit ?? 0);
+      })
+      .catch(() => {
+        // silently fail — counter is non-critical
+      });
   }, []);
 
   return count;

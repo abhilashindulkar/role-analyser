@@ -8,6 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ### Added
 
+- Visitor counter in the footer showing total cross-browser session visits, powered by [tally.yuki.sh](https://tally.yuki.sh) (Cloudflare KV); increments once per session, shared across all users
 - GCP APIs browser tab: searchable, category-filtered list of all 173 Google Cloud service APIs sourced from Google's APIs Discovery directory
 - API detail pages with documentation/console links and the IAM roles that use each API (matched by permission prefix)
 - `scripts/fetch_apis.py` to refresh the API dataset from `https://discovery.googleapis.com/discovery/v1/apis` (`npm run fetch-apis`)
